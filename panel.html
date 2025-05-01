@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Ultimate Illusion Gallery</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: #000;
+      color: #fff;
+      font-family: sans-serif;
+      scroll-behavior: smooth;
+    }
+
+    section {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px;
+      box-sizing: border-box;
+    }
+
+    h1 {
+      margin-bottom: 20px;
+      font-size: 2em;
+      text-align: center;
+      color: #0ff;
+    }
+
+    canvas {
+      display: block;
+    }
+
+    .spinner {
+      width: 200px;
+      height: 200px;
+      border-radius: 50%;
+      background: conic-gradient(#000 0deg, #fff 30deg, #000 60deg, #fff 90deg, #000 120deg, #fff 150deg, #000 180deg, #fff 210deg, #000 240deg, #fff 270deg, #000 300deg, #fff 330deg, #000 360deg);
+      animation: spin 4s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .color-grid {
+      display: grid;
+      grid-template-columns: repeat(10, 30px);
+      gap: 2px;
+    }
+
+    .color-grid div {
+      width: 30px;
+      height: 30px;
+      background: #f00;
+      transition: background 0.5s;
+    }
+
+    .color-grid:hover div {
+      background: #0f0;
+    }
+
+    .triangle {
+      width: 0;
+      height: 0;
+      border-left: 100px solid transparent;
+      border-right: 100px solid transparent;
+      border-bottom: 173.2px solid #0ff;
+      transform: rotate(30deg);
+    }
+
+    .motion-lines {
+      height: 200px;
+      width: 100%;
+      background: repeating-linear-gradient(90deg, #fff, #fff 10px, #000 10px, #000 20px);
+      background-size: 200% auto;
+      animation: moveLines 2s linear infinite;
+    }
+
+    @keyframes moveLines {
+      from { background-position: 0 0; }
+      to { background-position: 100% 0; }
+    }
+
+    .afterimage {
+      background-color: #fff;
+      color: #000;
+      padding: 20px;
+    }
+
+    .afterimage-circle {
+      width: 100px;
+      height: 100px;
+      background-color: red;
+      border-radius: 50%;
+      margin: 20px auto;
+    }
+
+    .cube {
+      width: 100px;
+      height: 100px;
+      background: linear-gradient(45deg, #444 25%, transparent 25%),
+                  linear-gradient(-45deg, #444 25%, transparent 25%),
+                  linear-gradient(45deg, transparent 75%, #444 75%),
+                  linear-gradient(-45deg, transparent 75%, #444 75%);
+      background-size: 40px 40px;
+      background-color: #999;
+    }
+  </style>
+</head>
+<body>
+
+<!-- Tesseract Illusion -->
+<section>
+  <h1>4D Tesseract Rotation</h1>
+  <canvas id="tesseractCanvas" width="600" height="600"></canvas>
+</section>
+
+<!-- Gradient Spinner -->
+<section>
+  <h1>Spinning Gradient Illusion</h1>
+  <div class="spinner"></div>
+</section>
+
+<!-- Color Grid Illusion -->
+<section>
+  <h1>Color Shift Grid</h1>
+  <div class="color-grid">
+    <script>
+      for (let i = 0; i < 100; i++) {
+        document.write('<div></div>');
+      }
+    </script>
+  </div>
+</section>
+
+<!-- Impossible Triangle -->
+<section>
+  <h1>Impossible Triangle</h1>
+  <div class="triangle"></div>
+</section>
+
+<!-- Motion Illusion -->
+<section>
+  <h1>Motion Lines Illusion</h1>
+  <div class="motion-lines"></div>
+</section>
+
+<!-- Afterimage Effect -->
+<section class="afterimage">
+  <h1>Afterimage Color Illusion</h1>
+  <div class="afterimage-circle"></div>
+  <p>Stare at the red dot for 20 seconds, then look at a white surface. You'll see a green circle!</p>
+</section>
+
+<!-- Cube Illusion -->
+<section>
+  <h1>3D Cube Illusion</h1>
+  <div class="cube"></div>
+</section>
+
+<script>
+  // Tesseract Animation
+  const canvas = document.getElementById("tesseractCanvas");
+  const ctx = canvas.getContext("2d");
+  const size = 200;
+  const vertices = [];
+  for (let i = 0; i < 16; i++) {
+    vertices.push([
+      (i & 1) * 2 - 1,
+      ((i >> 1) & 1) * 2 - 1,
+      ((i >> 2) & 1) * 2 - 1,
+      ((i >> 3) & 1) * 2 - 1
+    ]);
+  }
+
+  function rotate4D([x, y, z, w], t) {
+    let cos = Math.cos(t), sin = Math.sin(t);
+    let tx = x * cos - y * sin;
+    let ty = x * sin + y * cos;
+    let tz = z * cos - w * sin;
+    let tw = z * sin + w * cos;
+    return [tx, ty, tz, tw];
+  }
+
+  function project([x, y, z, w]) {
+    let scale = size / (4 - w);
+    return [canvas.width/2 + x * scale, canvas.height/2 + y * scale];
+  }
+
+  function drawLine(a, b, color) {
+    ctx.strokeStyle = color;
+    ctx.beginPath();
+    ctx.moveTo(...a);
+    ctx.lineTo(...b);
+    ctx.stroke();
+  }
+
+  function animate(time) {
+    ctx.fillStyle = "rgba(0,0,0,0.3)";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    let angle = time * 0.001;
+    let points = vertices.map(v => project(rotate4D(v, angle)));
+
+    for (let i = 0; i < 16; i++) {
+      for (let j = 0; j < 4; j++) {
+        let k = i ^ (1 << j);
+        if (i < k) {
+          let hue = (j * 90 + time * 0.1) % 360;
+          drawLine(points[i], points[k], `hsl(${hue}, 100%, 50%)`);
+        }
+      }
+    }
+    requestAnimationFrame(animate);
+  }
+
+  animate(0);
+</script>
+
+</body>
+</html>
